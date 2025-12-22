@@ -114,13 +114,19 @@ class AutoRunner:
         
         if not result:
             # Không phát hiện được, retry
+            # Step 8: Nếu retry quá 10 lần thì chuyển sang step 9
+            if step_num == 8 and retry_count >= 10:
+                print(f"✗ Step 8 không phát hiện được sau 10 lần retry")
+                print(f"→ Tự động chuyển sang step 9")
+                return "skip"  # Trả về signal để skip và chuyển sang step 9
+            
             if self.max_retries == 0 or retry_count < self.max_retries:
                 print(f"✗ Không phát hiện được, đợi {self.retry_delay}s và retry...")
                 time.sleep(self.retry_delay)
                 return self.run_step(step_num, retry_count + 1)
             else:
                 print(f"✗ Không phát hiện được sau {retry_count} lần retry")
-                # Step 8: Bỏ qua nếu vượt quá retry
+                # Step 8: Bỏ qua nếu vượt quá retry (fallback, nhưng đã xử lý ở trên)
                 if step_num == 8:
                     print(f"→ Step 8 vượt quá retry, sẽ bỏ qua và tiếp tục")
                     return "skip"  # Trả về signal để skip
@@ -140,13 +146,19 @@ class AutoRunner:
         
         if not success:
             # Click không thành công, retry
+            # Step 8: Nếu retry quá 10 lần thì chuyển sang step 9
+            if step_num == 8 and retry_count >= 10:
+                print(f"✗ Step 8 click không thành công sau 10 lần retry")
+                print(f"→ Tự động chuyển sang step 9")
+                return "skip"  # Trả về signal để skip và chuyển sang step 9
+            
             if self.max_retries == 0 or retry_count < self.max_retries:
                 print(f"✗ Click không thành công, đợi {self.retry_delay}s và retry...")
                 time.sleep(self.retry_delay)
                 return self.run_step(step_num, retry_count + 1)
             else:
                 print(f"✗ Click không thành công sau {retry_count} lần retry")
-                # Step 8: Bỏ qua nếu vượt quá retry
+                # Step 8: Bỏ qua nếu vượt quá retry (fallback, nhưng đã xử lý ở trên)
                 if step_num == 8:
                     print(f"→ Step 8 vượt quá retry, sẽ bỏ qua và tiếp tục")
                     return "skip"  # Trả về signal để skip
@@ -187,9 +199,13 @@ class AutoRunner:
             print(f"✓ Đã nhấn phím R 4 lần")
         
         elif step_num == 10:
-            # Step10: Sau khi click thành công, kill wwm.exe và kết thúc vòng lặp
+            # Step10: Bước mới (chỉ detect và click như các step thông thường)
+            pass
+        
+        elif step_num == 11:
+            # Step11: Sau khi click thành công, kill wwm.exe và kết thúc vòng lặp
             print(f"\n{'='*60}")
-            print("SAU STEP 10: KẾT THÚC VÒNG LẶP")
+            print("SAU STEP 11: KẾT THÚC VÒNG LẶP")
             print(f"{'='*60}")
             print("→ Đang kill process wwm.exe...")
             kill_process_by_name("wwm.exe", force=True)
@@ -207,7 +223,7 @@ class AutoRunner:
         return None
     
     def run_all_steps(self):
-        """Chạy tất cả các step từ 1 đến 10 liên tiếp, với restart logic nếu vượt quá retry"""
+        """Chạy tất cả các step từ 1 đến 11 liên tiếp, với restart logic nếu vượt quá retry"""
         if not self.steps:
             print("✗ Không tìm thấy step nào")
             return False
@@ -251,8 +267,8 @@ class AutoRunner:
                     continue
                 
                 elif result == "end_loop":
-                    # Step 10: Kết thúc vòng lặp
-                    print(f"\n→ Step 10 đã hoàn thành, kết thúc vòng lặp")
+                    # Step 11: Kết thúc vòng lặp
+                    print(f"\n→ Step 11 đã hoàn thành, kết thúc vòng lặp")
                     return "end_loop"
                 
                 elif not result:
@@ -359,13 +375,13 @@ class AutoRunner:
             result = self.run_all_steps()
             
             if result == "end_loop":
-                # Step 10 đã kill wwm.exe và kết thúc vòng lặp
+                # Step 11 đã kill wwm.exe và kết thúc vòng lặp
                 # Cập nhật state và kết thúc
                 self.update_account_state(account_id, "done")
-                print(f"\n✓ Hoàn tất vòng lặp {iteration} (đã kết thúc ở step 10)")
+                print(f"\n✓ Hoàn tất vòng lặp {iteration} (đã kết thúc ở step 11)")
                 break  # Kết thúc vòng lặp
             elif result:
-                # Các step đã hoàn thành thành công (trường hợp này không xảy ra vì step 10 sẽ trả về "end_loop")
+                # Các step đã hoàn thành thành công (trường hợp này không xảy ra vì step 11 sẽ trả về "end_loop")
                 # Nhưng để an toàn, vẫn cập nhật state
                 self.update_account_state(account_id, "done")
                 
