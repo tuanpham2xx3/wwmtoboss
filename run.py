@@ -267,8 +267,8 @@ class AutoRunner:
                     continue
                 
                 elif result == "end_loop":
-                    # Step 11: Kết thúc vòng lặp
-                    print(f"\n→ Step 11 đã hoàn thành, kết thúc vòng lặp")
+                    # Step 11: Đã hoàn thành (đã kill wwm.exe), trả về để cập nhật state và tiếp tục account tiếp theo
+                    print(f"\n→ Step 11 đã hoàn thành (đã kill wwm.exe)")
                     return "end_loop"
                 
                 elif not result:
@@ -375,17 +375,16 @@ class AutoRunner:
             result = self.run_all_steps()
             
             if result == "end_loop":
-                # Step 11 đã kill wwm.exe và kết thúc vòng lặp
-                # Cập nhật state và kết thúc
+                # Step 11 đã kill wwm.exe, cập nhật state và tiếp tục với account tiếp theo
                 self.update_account_state(account_id, "done")
-                print(f"\n✓ Hoàn tất vòng lặp {iteration} (đã kết thúc ở step 11)")
-                break  # Kết thúc vòng lặp
+                print(f"\n✓ Hoàn tất vòng lặp {iteration} (step 11 đã kill wwm.exe)")
+                # Tiếp tục vòng lặp để xử lý account tiếp theo (không break)
             elif result:
                 # Các step đã hoàn thành thành công (trường hợp này không xảy ra vì step 11 sẽ trả về "end_loop")
                 # Nhưng để an toàn, vẫn cập nhật state
                 self.update_account_state(account_id, "done")
                 
-                # Kill wwm.exe (phòng trường hợp không phải step 10)
+                # Kill wwm.exe (phòng trường hợp không phải step 11)
                 print(f"\n{'='*60}")
                 print("KILL PROCESS wwm.exe")
                 print(f"{'='*60}")
